@@ -49,15 +49,19 @@
 #include <linux/spinlock.h>
 #include <linux/jhash.h>
 #include <asm/page.h>
-#include <asm/i387.h>
 #include <asm/div64.h>
 #include <asm/atomic.h>
 #include <asm/cache.h>
 #include <asm/io.h>
 #include <asm/uaccess.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+    #include <asm/fpu/internal.h>
+#else
+    #include <asm/i387.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 4, 0)
 	#include <asm/fpu-internal.h>
+#endif
 #endif
 
 
@@ -777,7 +781,10 @@ dl_poll_wait(void *filp, struct dl_wait_queue_head_t *queue, void *wait, int wri
 inline void
 dl_kernel_fpu_begin()
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+    preempt_disable();
+	__kernel_fpu_begin();
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	kernel_fpu_begin();
 #else
 	struct thread_info *thread;
@@ -816,7 +823,10 @@ dl_kernel_fpu_begin()
 
 inline void dl_kernel_fpu_end(void)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+    preempt_disable();
+	__kernel_fpu_end();
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	kernel_fpu_end();
 #else
 	stts();
