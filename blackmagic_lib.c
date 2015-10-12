@@ -824,8 +824,8 @@ dl_kernel_fpu_begin()
 inline void dl_kernel_fpu_end(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
-    preempt_disable();
 	__kernel_fpu_end();
+    preempt_enable();
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 7, 0)
 	kernel_fpu_end();
 #else
